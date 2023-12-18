@@ -21,23 +21,22 @@ class PipelineSingleton {
 // see https://huggingface.co/thenlper/gte-small/blob/d8e2604cadbeeda029847d19759d219e0ce2e6d8/README.md?code=true#L2625
 export const MAX_SEQ_LEN = 512 as const;
 
-export async function findSimilarSentences(
-	query: string,
-	sentences: string[],
+export async function createEmbeddings(input: string[]) {
+	const extractor = await PipelineSingleton.getInstance();
+	const embeddings: Tensor = await extractor(input, { pooling: "mean", normalize: true });
+	return embeddings;
+}
+
+// docstring about the first sentence being the query sentence
+export function findSimilarSentences(
+	embeddings: Tensor,
+	queryEmbedding: Tensor,
 	{ topK = 5 }: { topK: number }
 ) {
-	const input = [query, ...sentences];
-
-	const extractor = await PipelineSingleton.getInstance();
-	const output: Tensor = await extractor(input, { pooling: "mean", normalize: true });
-
-	const queryTensor: Tensor = output[0];
-	const sentencesTensor: Tensor = output.slice([1, input.length - 1]);
-
-	const distancesFromQuery: { distance: number; index: number }[] = [...sentencesTensor].map(
+	const distancesFromQuery: { distance: number; index: number }[] = [...embeddings].map(
 		(sentenceTensor: Tensor, index: number) => {
 			return {
-				distance: innerProduct(queryTensor, sentenceTensor),
+				distance: innerProduct(queryEmbedding, sentenceTensor),
 				index: index,
 			};
 		}

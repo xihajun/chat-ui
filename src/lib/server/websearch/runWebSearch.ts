@@ -7,10 +7,12 @@ import { chunk } from "$lib/utils/chunk";
 import {
 	MAX_SEQ_LEN as CHUNK_CAR_LEN,
 	findSimilarSentences,
-} from "$lib/server/websearch/sentenceSimilarity";
+	createEmbeddings,
+} from "$lib/server/embeddings";
 import type { Conversation } from "$lib/types/Conversation";
 import type { MessageUpdate } from "$lib/types/MessageUpdate";
 import { getWebSearchProvider } from "./searchWeb";
+import type { Tensor } from "@xenova/transformers";
 
 const MAX_N_PAGES_SCRAPE = 10 as const;
 const MAX_N_PAGES_EMBED = 5 as const;
@@ -87,7 +89,10 @@ export async function runWebSearch(
 		appendUpdate("Extracting relevant information");
 		const topKClosestParagraphs = 8;
 		const texts = paragraphChunks.map(({ text }) => text);
-		const indices = await findSimilarSentences(prompt, texts, {
+		const embeddings = await createEmbeddings([prompt, ...texts]);
+		const queryTensor: Tensor = embeddings[0];
+		const sentencesTensor: Tensor = embeddings.slice([1, texts.length]);
+		const indices = findSimilarSentences(sentencesTensor, queryTensor, {
 			topK: topKClosestParagraphs,
 		});
 		webSearch.context = indices.map((idx) => texts[idx]).join("");
