@@ -6,6 +6,7 @@ import endpointAws, { endpointAwsParametersSchema } from "./aws/endpointAws";
 import { endpointOAIParametersSchema, endpointOai } from "./openai/endpointOai";
 import endpointLlamacpp, { endpointLlamacppParametersSchema } from "./llamacpp/endpointLlamacpp";
 import endpointOllama, { endpointOllamaParametersSchema } from "./ollama/endpointOllama";
+import endpointTriton, { endpointTritonParametersSchema } from "./triton/endpointTriton";
 
 // parameters passed when generating text
 interface EndpointParameters {
@@ -34,6 +35,7 @@ export const endpoints = {
 	openai: endpointOai,
 	llamacpp: endpointLlamacpp,
 	ollama: endpointOllama,
+	triton: endpointTriton,
 };
 
 export const endpointSchema = z.discriminatedUnion("type", [
@@ -42,5 +44,6 @@ export const endpointSchema = z.discriminatedUnion("type", [
 	endpointTgiParametersSchema,
 	endpointLlamacppParametersSchema,
 	endpointOllamaParametersSchema,
+	endpointTritonParametersSchema,
 ]);
 export default endpoints;

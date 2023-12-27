@@ -112,6 +112,8 @@ const addEndpoint = (m: Awaited<ReturnType<typeof processModel>>) => ({
 						return endpoints.llamacpp(args);
 					case "ollama":
 						return endpoints.ollama(args);
+					case "triton":
+						return endpoints.triton(args);
 					default:
 						// for legacy reason
 						return endpoints.tgi(args);
