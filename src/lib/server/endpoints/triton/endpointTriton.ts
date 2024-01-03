@@ -50,6 +50,7 @@ export function endpointTirton(
 
         return (async function* () {
             let stop = false;
+            let lastOutputLength = 0;
             let generatedText = "";
             let tokenId = 0;
             while (!stop) {
@@ -71,11 +72,13 @@ export function endpointTirton(
                         return;
                     }
                     if (data.text_output || data.sequence_end) {
-                        generatedText += data.text_output;
-                        const output = {
+                        const newText = data.text_output.slice(lastOutputLength);
+                        lastOutputLength = data.text_output.length;
+                        generatedText = data.text_output;
+                        const output: TextGenerationStreamOutput = {
                             token: {
                                 id: tokenId++,
-                                text: data.text_output+" " ?? "",
+                                text: newText, //data.text_output+" " ?? "",
                                 logprob: 0,
                                 special: false,
                             },
